@@ -1,9 +1,17 @@
 apply plugin: 'java'
 
+test {
+    maxHeapSize="1G"
+}
+
 repositories {
     mavenLocal()
     jcenter()
     mavenCentral()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 dependencies {
@@ -28,3 +36,4 @@ task release(dependsOn: 'jar') {
         into 'release/models'
     }
 }
+
