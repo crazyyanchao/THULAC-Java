@@ -33,8 +33,21 @@ public class DictionaryPass implements IPostprocessPass {
 	public DictionaryPass(String dictFile, String tag, boolean isTxt)
 			throws IOException {
 		this.tag = tag;
-		if (isTxt) this.dictionary = DatMaker.readFromTxtFile(dictFile);
-		else this.dictionary = new Dat(dictFile);
+		if (isTxt) {
+			this.dictionary = DatMaker.readFromTxtFile(dictFile);
+		} else {
+			this.dictionary = new Dat(dictFile);
+		}
+	}
+
+	public DictionaryPass(String dictFile, String tag, boolean isTxt,String encode)
+			throws IOException {
+		this.tag = tag;
+		if (isTxt) {
+			this.dictionary = DatMaker.readFromTxtFile(dictFile,encode);
+		} else {
+			this.dictionary = new Dat(dictFile);
+		}
 	}
 
 	@Override

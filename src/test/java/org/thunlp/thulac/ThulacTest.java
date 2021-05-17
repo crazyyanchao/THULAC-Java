@@ -1,8 +1,10 @@
 package org.thunlp.thulac;
 
 import org.junit.Test;
+import org.thunlp.thulac.data.TaggedWord;
 
 import java.io.IOException;
+import java.util.List;
 
 /*
  *
@@ -42,5 +44,68 @@ public class ThulacTest {
         String result = Thulac.split(TEXT, false);
         System.out.println(result);
     }
+
+    @Test
+    public void split_3() throws IOException {
+        // 模型文件所在的目录
+        String modelDir = "models/";
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        String userDict = "dic/user_defined.txt";
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = true;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String result = Thulac.split(TEXT, segOnly,modelDir, separator, userDict, useT2S, useFilter);
+        System.out.println(result);
+    }
+
+    @Test
+    public void split_4() throws IOException {
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        String userDict = "dic/user_defined.txt";
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = true;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String result = Thulac.split(TEXT, segOnly, separator, userDict, useT2S, useFilter);
+        System.out.println(result);
+    }
+
+    @Test
+    public void split_5() throws IOException {
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        String userDict = "dic/user_defined.txt";
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = false;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String result = Thulac.split(TEXT, segOnly, separator, userDict, useT2S, useFilter);
+        System.out.println(result);
+    }
+
+    @Test
+    public void split_6() throws IOException {
+        // 用户指定的字典的可选文件名
+        String userDict = "dic/user_defined.txt";
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        List<TaggedWord> result = Thulac.split(TEXT, userDict, useT2S, useFilter);
+        result.forEach(v-> System.out.println(v.getWord()+"    "+v.getTag()+"  "+v.getDescription()));
+    }
 }
+
 
