@@ -143,7 +143,7 @@ public class ThulacTest {
 
     @Test
     public void split_7() throws IOException {
-        TEXT="海德股份：首家民营AMC牌照，定增过会业务启动";
+        TEXT="Deprecated Gradle features were used in this build, making it incompatible with Gradle 7.0. 海德股份：首家民营AMC牌照，定增过会业务启动";
         // 用于分隔单词和标签的分隔符
         char separator = '_';
         // 用户指定的字典的可选文件名
