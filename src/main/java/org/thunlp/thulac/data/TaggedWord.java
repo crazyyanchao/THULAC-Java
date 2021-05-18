@@ -5,8 +5,11 @@ package org.thunlp.thulac.data;
  */
 public class TaggedWord {
 
+    // 词
     public String word;
+    // 词性
     public String tag;
+    // 词性标签的描述
     public String description;
 
     public TaggedWord() {
@@ -14,9 +17,9 @@ public class TaggedWord {
     }
 
     public TaggedWord(String word, String tag) {
-        this.word = word;
+        this.word = word != null ? word.replace("\n", "") : null;
         this.tag = tag;
-        this.description = WordNature.MAP.get(tag);
+        this.description = WordNature.MAP.get(tag) != null ? WordNature.MAP.get(tag) : "其它";
     }
 
     public String getWord() {
