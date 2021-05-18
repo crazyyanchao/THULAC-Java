@@ -49,7 +49,9 @@ public class BufferUtils {
 			// read buffer
 			readBytes = channel.read(buf);
 			// if EOF is reached and there are still arrays left not filled
-			if (readBytes == -1) return false;
+			if (readBytes == -1) {
+				return false;
+			}
 			buf.flip();
 			IntBuffer intBuf = buf.asIntBuffer();
 			readInts = readBytes >> 2;

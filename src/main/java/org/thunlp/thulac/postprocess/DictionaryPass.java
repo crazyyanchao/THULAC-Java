@@ -50,6 +50,16 @@ public class DictionaryPass implements IPostprocessPass {
 		}
 	}
 
+	public DictionaryPass(List<String> dictFile, String tag, boolean isTxt,String encode)
+			throws IOException {
+		this.tag = tag;
+		if (isTxt) {
+			this.dictionary = DatMaker.readFromTxtFile(dictFile,encode);
+		} else {
+			this.dictionary = new Dat(dictFile);
+		}
+	}
+
 	@Override
 	public void process(List<TaggedWord> sentence) {
 		if (this.dictionary == null || sentence.isEmpty()) return;

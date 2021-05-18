@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.thunlp.thulac.data.TaggedWord;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -139,6 +140,25 @@ public class ThulacTest {
         List<TaggedWord> result = Thulac.split(TEXT, userDict, useT2S, useFilter);
         result.forEach(v-> System.out.println(v.getWord()+"    "+v.getTag()+"  "+v.getDescription()));
     }
+
+    @Test
+    public void split_7() throws IOException {
+        TEXT="海德股份：首家民营AMC牌照，定增过会业务启动";
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        String[] userDicts = new String[]{"dic/user_defined.dic","dic/user_defined_2.dic"};
+//        String[] userDicts = new String[]{"dic/user_defined.dic"};
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = false;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String result = Thulac.split(TEXT, segOnly, separator, Arrays.asList(userDicts), useT2S, useFilter);
+        System.out.println(result);
+    }
+
 }
 
 

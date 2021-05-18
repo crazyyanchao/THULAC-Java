@@ -83,6 +83,27 @@ public class DatMaker extends Dat {
     }
 
     /**
+     * @param inList     输入
+     * @param encode 指定编码格式
+     * @return
+     * @Description: TODO(读取文件)
+     */
+    public static Dat readFromInputStream(List<InputStream> inList, String encode) throws IOException {
+        List<String> words = new ArrayList<>();
+        for (InputStream in: inList) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            String str;
+            while ((str = reader.readLine()) != null) {
+                words.add(new String(str.getBytes(), encode));
+            }
+            reader.close();
+        }
+        DatMaker dat = new DatMaker();
+        dat.buildDat(words);
+        return dat;
+    }
+
+    /**
      * Reads (or more precisely, constructs) an instance of {@link Dat} from the given
      * file. This is used to generate {@link Dat} from a user-specified dictionary,
      * which consists of multiple lines, each one representing a word in the dictionary.
@@ -97,6 +118,14 @@ public class DatMaker extends Dat {
 
     public static Dat readFromTxtFile(String filename, String encode) throws IOException {
         return readFromInputStream(new FileInputStream(filename), encode);
+    }
+
+    public static Dat readFromTxtFile(List<String> filenameList, String encode) throws IOException {
+        List<InputStream> inputStreamList = new ArrayList<>();
+        for (String filename : filenameList) {
+            inputStreamList.add(new FileInputStream(filename));
+        }
+        return readFromInputStream(inputStreamList, encode);
     }
 
     // The main idea of this ingenious algorithm that generates a Dat instance from the
