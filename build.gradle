@@ -12,7 +12,7 @@ def mainClass="org.thunlp.thulac.main.Main"
 def description="THULAC Tokenizer"
 
 test {
-    maxHeapSize = "1G"
+    maxHeapSize = "10G"
 }
 
 // 指定编码

@@ -60,7 +60,7 @@ public class ThulacTest {
         boolean segOnly = true;
         // 是否在处理时使用过滤器
         boolean useFilter = false;
-        String result = Thulac.split(TEXT, segOnly,modelDir, separator, userDict, useT2S, useFilter);
+        String result = Thulac.split(TEXT, segOnly, modelDir, separator, userDict, useT2S, useFilter);
         System.out.println(result);
     }
 
@@ -138,16 +138,16 @@ public class ThulacTest {
         // 是否在处理时使用过滤器
         boolean useFilter = false;
         List<TaggedWord> result = Thulac.split(TEXT, userDict, useT2S, useFilter);
-        result.forEach(v-> System.out.println(v.getWord()+"    "+v.getTag()+"  "+v.getDescription()));
+        result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
     }
 
     @Test
     public void split_7() throws IOException {
-        TEXT="Deprecated Gradle features were used in this build, making it incompatible with Gradle 7.0. 海德股份：首家民营AMC牌照，定增过会业务启动";
+        TEXT = "Deprecated Gradle features were used in this build, making it incompatible with Gradle 7.0. 海德股份：首家民营AMC牌照，定增过会业务启动";
         // 用于分隔单词和标签的分隔符
         char separator = '_';
         // 用户指定的字典的可选文件名
-        String[] userDicts = new String[]{"dic/user_defined.dic","dic/user_defined_2.dic"};
+        String[] userDicts = new String[]{"dic/user_defined.dic", "dic/user_defined_2.dic"};
 //        String[] userDicts = new String[]{"dic/user_defined.dic"};
         // 是否将繁体中文转换为简体中文
         boolean useT2S = true;
@@ -159,6 +159,40 @@ public class ThulacTest {
         System.out.println(result);
     }
 
+    @Test
+    public void split_8() throws IOException {
+        TEXT = "葛洲坝2017年半年报点评：业绩符合预期，多元业务齐头并进";
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        // 加载大词典测试
+//        String[] userDicts = new String[]{"dic/PRE_ORG_CN_DIC.txt"};
+        String[] userDicts = new String[]{"dic/user_defined.dic"};
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = false;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String result = Thulac.split(TEXT, segOnly, separator, Arrays.asList(userDicts), useT2S, useFilter);
+        System.out.println(result);
+    }
+
+    @Test
+    public void markAsUsed() {
+        /*
+         * 求解步骤：
+         * 1、二进制原码
+         * 2、二进制反码
+         * 3、二进制补码
+         * 4、左移两位后的补码
+         * 5、反码
+         * 6、原码
+         * 7、结果
+         * */
+        int index = 20 << 2;
+        System.out.println(index);
+    }
 }
 
 

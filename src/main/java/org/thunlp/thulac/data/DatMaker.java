@@ -76,7 +76,7 @@ public class DatMaker extends Dat {
             words.add(new String(str.getBytes(), encode));
         }
         reader.close();
-
+        in.close();
         DatMaker dat = new DatMaker();
         dat.buildDat(words);
         return dat;
@@ -97,6 +97,7 @@ public class DatMaker extends Dat {
                 words.add(new String(str.getBytes(), encode));
             }
             reader.close();
+            in.close();
         }
         DatMaker dat = new DatMaker();
         dat.buildDat(words);
@@ -229,16 +230,51 @@ public class DatMaker extends Dat {
         int base = this.dat[index << 1], check = this.dat[(index << 1) + 1];
 
         // if the the next element is already USED, print an error message
-        if (check >= 0) throw new RuntimeException("Cell reused! Index: " + index);
+        if (check >= 0) {
+            throw new RuntimeException("Cell reused! Index: " + index);
+        }
 
         // maintain the double-linked list
-        if (base == -1) this.head = check;
-        else this.dat[((-base) << 1) + 1] = check;
-        if (check == -this.datSize) this.tail = base;
-        else this.dat[(-check) << 1] = base;
+        if (base == -1) {
+            this.head = check;
+        } else {
+            this.dat[((-base) << 1) + 1] = check;
+        }
+        if (check == -this.datSize) {
+            this.tail = base;
+        } else {
+            this.dat[(-check) << 1] = base;
+        }
 
         this.dat[(index << 1) + 1] = index; // positive check: element used
     }
+
+//    // mark element as used by modifying the double-linked list
+//    private void markAsUsed(int index) {
+//        // -base -> the previous element, -check -> the next element
+//        int base = this.dat[index << 1], check = this.dat[(index << 1) + 1];
+//
+////        // if the the next element is already USED, print an error message
+////        if (check >= 0) {
+////            throw new RuntimeException("Cell reused! Index: " + index);
+////        }
+//
+//        if (check<0) {
+//            // maintain the double-linked list
+//            if (base == -1) {
+//                this.head = check;
+//            } else {
+//                this.dat[((-base) << 1) + 1] = check;
+//            }
+//            if (check == -this.datSize) {
+//                this.tail = base;
+//            } else {
+//                this.dat[(-check) << 1] = base;
+//            }
+//
+//            this.dat[(index << 1) + 1] = index; // positive check: element used
+//        }
+//    }
 
     // expand size of this.dat
     private void expandDat() {
@@ -265,7 +301,9 @@ public class DatMaker extends Dat {
     private void packDat() {
         // calculate minimum size
         int last = this.datSize - 1;
-        for (; this.dat[(last << 1) + 1] < 0; --last) ;
+        for (; this.dat[(last << 1) + 1] < 0; --last) {
+            ;
+        }
         this.datSize = last + 1;
 
         // truncate this.dat
@@ -280,32 +318,45 @@ public class DatMaker extends Dat {
         int base = -this.head; // initialized to the head of the double-linked list
         while (true) {
             // expand this.dat as needed
-            if (base == this.datSize) this.expandDat();
+            if (base == this.datSize) {
+                this.expandDat();
+            }
             if (size != 0) {
                 // sorted, offsets.get(size - 1) is the greatest
                 int requiredSize = base + offsets.get(size - 1);
-                while (requiredSize >= this.datSize) this.expandDat();
+                while (requiredSize >= this.datSize) {
+                    this.expandDat();
+                }
             }
 
             boolean available = true; // check availability
-            if (this.dat[(base << 1) + 1] >= 0) available = false; // ELEMENTS[BASE] USED
-            else {
+            if (this.dat[(base << 1) + 1] >= 0) {
+                available = false; // ELEMENTS[BASE] USED
+            } else {
                 // if any ELEMENTS[BASE + C] is USED, available = false
                 int i = 0;
-                for (; i < size && this.dat[(base + offsets.get(i) << 1) + 1] < 0; i++) ;
-                if (i < size) available = false;
+                for (; i < size && this.dat[(base + offsets.get(i) << 1) + 1] < 0; i++) {
+                    ;
+                }
+                if (i < size) {
+                    available = false;
+                }
             }
 
             if (available) { // if BASE is available, update double-linked list
                 this.markAsUsed(base);
-                for (int offset : offsets) this.markAsUsed(base + offset);
+                for (int offset : offsets) {
+                    this.markAsUsed(base + offset);
+                }
 
                 return base;
             }
 
             // find next BASE to check availability
             int newBase = -this.dat[(base << 1) + 1];
-            if (newBase == this.datSize) this.expandDat(); // ensure capacity
+            if (newBase == this.datSize) {
+                this.expandDat(); // ensure capacity
+            }
             base = newBase;
         }
     }
@@ -316,10 +367,16 @@ public class DatMaker extends Dat {
         int length = prefix.length(), currentChild = -1;
         for (int i = start, size = lexicon.size(); i < size; ++i) {
             String word = lexicon.get(i).word;
-            if (!word.startsWith(prefix)) return children;
-            if (word.length() == length) continue;
+            if (!word.startsWith(prefix)) {
+                return children;
+            }
+            if (word.length() == length) {
+                continue;
+            }
             int nextCh = word.charAt(length);
-            if (nextCh != currentChild) children.add(currentChild = nextCh);
+            if (nextCh != currentChild) {
+                children.add(currentChild = nextCh);
+            }
         }
         return children;
     }
@@ -347,8 +404,9 @@ public class DatMaker extends Dat {
         // construct lexicon
         Vector<Record> lexicon = new Vector<>();
         lexicon.add(new Record());
-        for (int i = 0, size = words.size(); i < size; ++i)
+        for (int i = 0, size = words.size(); i < size; ++i) {
             lexicon.add(new Record(words.get(i), i));
+        }
         lexicon.sort(RECORDS_COMPARATOR); // sort input
 
         // root elements
@@ -358,7 +416,9 @@ public class DatMaker extends Dat {
             String word = lexicon.get(i).word;
 
             int off = this.getInfo(word);
-            if (off <= 0) off = word.length(); // if dat already contains word
+            if (off <= 0) {
+                off = word.length(); // if dat already contains word
+            }
 
             // iterate through characters after offset and add new entries
             for (int offset = off; offset <= word.length(); offset++) {
@@ -375,3 +435,4 @@ public class DatMaker extends Dat {
         this.packDat();
     }
 }
+
