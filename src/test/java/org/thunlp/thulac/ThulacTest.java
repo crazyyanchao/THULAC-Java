@@ -193,6 +193,60 @@ public class ThulacTest {
         int index = 20 << 2;
         System.out.println(index);
     }
+
+    @Test
+    public void taggedWordWithUserdicList() throws IOException {
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+
+        TEXT = "葛洲坝2017年半年报点评：业绩符合预期，多元业务齐头并进";
+        // 用于分隔单词和标签的分隔符
+        char separator = '_';
+        // 用户指定的字典的可选文件名
+        // 加载大词典测试
+        String[] userDicts = new String[]{"dic/user_defined.dic"};
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = false;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+
+        List<TaggedWord> result = Thulac.split(TEXT, Arrays.asList(userDicts), useT2S, useFilter);
+        result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
+    }
+
+    @Test
+    public void staticLoadUserDefineDic() throws IOException {
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+
+        TEXT = "葛洲坝2017年半年报点评：业绩符合预期，多元业务齐头并进";
+        // 用户指定的字典的可选文件名
+        // 加载大词典测试
+        String[] userDicts = new String[]{"dic/user_defined.dic"};
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否只输出分词结果【也可以输出词语和词性信息】
+        boolean segOnly = false;
+        // 是否在处理时使用过滤器
+        boolean useFilter = false;
+        String modelDir = "models/";
+
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+        Thulac.init(Arrays.asList(userDicts), modelDir, useT2S, segOnly, useFilter);
+        /*
+         * 开始分词
+         * */
+        for (int i = 0; i < 10; i++) {
+            List<TaggedWord> result = Thulac.split(TEXT);
+            result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
+        }
+    }
 }
 
 

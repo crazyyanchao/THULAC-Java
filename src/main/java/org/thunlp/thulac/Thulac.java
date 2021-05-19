@@ -69,6 +69,32 @@ public class Thulac {
 
     /**
      * @param input     输入的被分词文本
+     * @param useFilter 是否在处理时使用过滤器
+     * @param userDict  用户指定的字典的可选文件名
+     * @param useT2S    是否将繁体中文转换为简体中文
+     * @return
+     * @Description: TODO(分词接口)
+     */
+    public static List<TaggedWord> split(String input, List<String> userDict, boolean useT2S, boolean useFilter) throws IOException {
+        StringOutputHandler outputProvider = IOUtils.outputToString();
+        IInputProvider inputProvider = IOUtils.inputFromString(input);
+        splitWithUserDics("models/", '_', userDict.stream().distinct().collect(Collectors.toList()), useT2S, false, useFilter, inputProvider, outputProvider);
+        String result = outputProvider.getString();
+        List<TaggedWord> taggedWordList = new ArrayList<>();
+        String[] results = result.split(" ");
+        for (String word : results) {
+            String[] strArray = word.split("_");
+            if (strArray.length > 1) {
+                String wd = strArray[0];
+                String tag = strArray[1];
+                taggedWordList.add(new TaggedWord(wd, tag));
+            }
+        }
+        return taggedWordList;
+    }
+
+    /**
+     * @param input     输入的被分词文本
      * @param modelDir  模型文件所在的目录
      * @param segOnly   是否只输出分词结果【也可以输出词语和词性信息】
      * @param separator 用于分隔单词和标签的分隔符
@@ -339,6 +365,112 @@ public class Thulac {
             input.onProgramEnd();
             output.onProgramEnd();
         }
+    }
+
+    private static CBTaggingDecoder TAGGING_DECODER;
+    private static List<IPreprocessPass> PRE;
+    private static List<IPostprocessPass> POST;
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(初始化静态加载模型文件和用户自定义词典)
+     */
+    public static void init(List<String> userDict, String modelDir, boolean useT2S, boolean segOnly, boolean useFilter) throws IOException {
+        // init
+        TAGGING_DECODER = new CBTaggingDecoder();
+        PRE = new ArrayList<>();
+        POST = new ArrayList<>();
+
+        // segmentation
+        TAGGING_DECODER.threshold = segOnly ? 0 : 10000;
+        String prefix = modelDir + (segOnly ? "cws_" : "model_c_");
+        TAGGING_DECODER.loadFiles(prefix + "model.bin",
+                prefix + "dat.bin",
+                prefix + "label.txt");
+        TAGGING_DECODER.setLabelTrans();
+
+        // preprocess passes
+
+        PRE.add(new PreprocessPass());
+        if (useT2S) {
+            PRE.add(new ConvertT2SPass(modelDir + "t2s.dat"));
+        }
+
+        // postprocess passes
+        POST.add(new DictionaryPass(modelDir + "ns.dat", "ns", false));
+        POST.add(new DictionaryPass(modelDir + "idiom.dat", "i", false));
+        POST.add(new DictionaryPass(modelDir + "singlepun.dat", "w", false));
+        POST.add(new TimeWordPass());
+        POST.add(new DoubleWordPass());
+        POST.add(new SpecialPass());
+        POST.add(new NegWordPass(modelDir + "neg.dat"));
+        if (userDict != null) {
+            POST.add(new DictionaryPass(userDict, "uw", true, "UTF-8"));
+        }
+        if (useFilter) {
+            POST.add(new FilterPass(modelDir + "xu.dat", modelDir + "time.dat"));
+        }
+    }
+
+    public static void splitWithUserDics(
+            char separator,
+            boolean segOnly,
+            IInputProvider input, IOutputHandler output) throws IOException {
+        try {
+            input.onProgramStart();
+            output.onProgramStart();
+
+            // main loop
+            List<TaggedWord> words = new Vector<>();
+            POCGraph graph = new POCGraph();
+            for (List<String> lineSegments = input.provideInput();
+                 lineSegments != null;
+                 lineSegments = input.provideInput()) {
+                output.handleLineStart();
+                for (String raw : lineSegments) {
+                    for (IPreprocessPass pass : PRE) {
+                        raw = pass.process(raw, graph);
+                    }
+                    TAGGING_DECODER.segment(raw, graph, words);
+                    for (IPostprocessPass pass : POST) {
+                        pass.process(words);
+                    }
+
+                    output.handleLineSegment(words, segOnly, separator);
+                }
+                output.handleLineEnd();
+            }
+        } finally { // close resources even when program crashes
+            input.onProgramEnd();
+            output.onProgramEnd();
+        }
+    }
+
+    /**
+     * @param input 输入的被分词文本
+     * @return
+     * @Description: TODO(分词接口)
+     */
+    public static List<TaggedWord> split(String input) throws IOException {
+        if (TAGGING_DECODER == null || PRE == null || POST == null) {
+            throw new RuntimeException("The `Thulac.init()` method must be called first!");
+        }
+        StringOutputHandler outputProvider = IOUtils.outputToString();
+        IInputProvider inputProvider = IOUtils.inputFromString(input);
+        splitWithUserDics('_', false, inputProvider, outputProvider);
+        String result = outputProvider.getString();
+        List<TaggedWord> taggedWordList = new ArrayList<>();
+        String[] results = result.split(" ");
+        for (String word : results) {
+            String[] strArray = word.split("_");
+            if (strArray.length > 1) {
+                String wd = strArray[0];
+                String tag = strArray[1];
+                taggedWordList.add(new TaggedWord(wd, tag));
+            }
+        }
+        return taggedWordList;
     }
 }
 
