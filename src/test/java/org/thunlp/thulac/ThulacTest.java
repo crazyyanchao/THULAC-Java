@@ -217,7 +217,7 @@ public class ThulacTest {
         // 模型文件所在的目录
         String modelDir = "models/";
 
-        List<TaggedWord> result = Thulac.split(TEXT, Arrays.asList(userDicts), modelDir,separator,segOnly,useT2S, useFilter);
+        List<TaggedWord> result = Thulac.split(TEXT, Arrays.asList(userDicts), modelDir, separator, segOnly, useT2S, useFilter);
         result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
     }
 
@@ -241,7 +241,11 @@ public class ThulacTest {
          * 开始分词
          * */
         for (int i = 0; i < 1000; i++) {
-            List<TaggedWord> result = Thulac.splitWithCache(TEXT,new ArrayList<>(Arrays.asList(userDicts)),useT2S, useFilter);
+            if (i == 3) {
+                useT2S = false;
+                useFilter = true;
+            }
+            List<TaggedWord> result = Thulac.splitWithCache(TEXT, new ArrayList<>(Arrays.asList(userDicts)), useT2S, useFilter);
             result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
         }
         Thulac.clearCache();

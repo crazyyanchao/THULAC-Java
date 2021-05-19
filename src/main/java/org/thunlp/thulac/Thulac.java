@@ -388,8 +388,8 @@ public class Thulac {
             POST = new ArrayList<>();
 
             // segmentation
-            TAGGING_DECODER.threshold = segOnly ? 0 : 10000;
-            String prefix = modelDir + (segOnly ? "cws_" : "model_c_");
+            TAGGING_DECODER.threshold = 10000;
+            String prefix = modelDir + "model_c_";
             TAGGING_DECODER.loadFiles(prefix + "model.bin",
                     prefix + "dat.bin",
                     prefix + "label.txt");
@@ -411,8 +411,13 @@ public class Thulac {
         /*
          * 更新参数
          * */
+        ConvertT2SPass t2SPass = new ConvertT2SPass(modelDir + "t2s.dat");
         if (useT2S) {
-            PRE.add(new ConvertT2SPass(modelDir + "t2s.dat"));
+            if (!PRE.contains(t2SPass)) {
+                PRE.add(t2SPass);
+            }
+        } else {
+            PRE.remove(t2SPass);
         }
         if (userDict != null) {
             userDict.removeAll(USER_DEFINE_DIC_LIST);
@@ -421,8 +426,13 @@ public class Thulac {
                 POST.add(new DictionaryPass(userDict, "uw", true, "UTF-8"));
             }
         }
+        FilterPass filterPass = new FilterPass(modelDir + "xu.dat", modelDir + "time.dat");
         if (useFilter) {
-            POST.add(new FilterPass(modelDir + "xu.dat", modelDir + "time.dat"));
+            if (!POST.contains(filterPass)) {
+                POST.add(filterPass);
+            }
+        } else {
+            POST.remove(filterPass);
         }
     }
 
