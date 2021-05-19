@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -75,15 +76,15 @@ public class Thulac {
      * @return
      * @Description: TODO(分词接口)
      */
-    public static List<TaggedWord> split(String input, List<String> userDict, boolean useT2S, boolean useFilter) throws IOException {
+    public static List<TaggedWord> split(String input, List<String> userDict, String modelDir, char separator, boolean segOnly, boolean useT2S, boolean useFilter) throws IOException {
         StringOutputHandler outputProvider = IOUtils.outputToString();
         IInputProvider inputProvider = IOUtils.inputFromString(input);
-        splitWithUserDics("models/", '_', userDict.stream().distinct().collect(Collectors.toList()), useT2S, false, useFilter, inputProvider, outputProvider);
+        splitWithUserDics(modelDir, separator, userDict.stream().distinct().collect(Collectors.toList()), useT2S, segOnly, useFilter, inputProvider, outputProvider);
         String result = outputProvider.getString();
         List<TaggedWord> taggedWordList = new ArrayList<>();
         String[] results = result.split(" ");
         for (String word : results) {
-            String[] strArray = word.split("_");
+            String[] strArray = word.split(String.valueOf(separator));
             if (strArray.length > 1) {
                 String wd = strArray[0];
                 String tag = strArray[1];
@@ -370,49 +371,66 @@ public class Thulac {
     private static CBTaggingDecoder TAGGING_DECODER;
     private static List<IPreprocessPass> PRE;
     private static List<IPostprocessPass> POST;
+    private final static List<String> USER_DEFINE_DIC_LIST = new ArrayList<>();
 
     /**
      * @param
      * @return
      * @Description: TODO(初始化静态加载模型文件和用户自定义词典)
      */
-    public static void init(List<String> userDict, String modelDir, boolean useT2S, boolean segOnly, boolean useFilter) throws IOException {
-        // init
-        TAGGING_DECODER = new CBTaggingDecoder();
-        PRE = new ArrayList<>();
-        POST = new ArrayList<>();
+    private static void init(List<String> userDict, boolean useT2S, boolean useFilter) throws IOException {
+        String modelDir = "models/";
+        if (TAGGING_DECODER == null || PRE == null || POST == null) {
+            boolean segOnly = false;
+            // init
+            TAGGING_DECODER = new CBTaggingDecoder();
+            PRE = new ArrayList<>();
+            POST = new ArrayList<>();
 
-        // segmentation
-        TAGGING_DECODER.threshold = segOnly ? 0 : 10000;
-        String prefix = modelDir + (segOnly ? "cws_" : "model_c_");
-        TAGGING_DECODER.loadFiles(prefix + "model.bin",
-                prefix + "dat.bin",
-                prefix + "label.txt");
-        TAGGING_DECODER.setLabelTrans();
+            // segmentation
+            TAGGING_DECODER.threshold = segOnly ? 0 : 10000;
+            String prefix = modelDir + (segOnly ? "cws_" : "model_c_");
+            TAGGING_DECODER.loadFiles(prefix + "model.bin",
+                    prefix + "dat.bin",
+                    prefix + "label.txt");
+            TAGGING_DECODER.setLabelTrans();
 
-        // preprocess passes
+            // preprocess passes
+            PRE.add(new PreprocessPass());
 
-        PRE.add(new PreprocessPass());
+            // postprocess passes
+            POST.add(new DictionaryPass(modelDir + "ns.dat", "ns", false));
+            POST.add(new DictionaryPass(modelDir + "idiom.dat", "i", false));
+            POST.add(new DictionaryPass(modelDir + "singlepun.dat", "w", false));
+            POST.add(new TimeWordPass());
+            POST.add(new DoubleWordPass());
+            POST.add(new SpecialPass());
+            POST.add(new NegWordPass(modelDir + "neg.dat"));
+        }
+
+        /*
+         * 更新参数
+         * */
         if (useT2S) {
             PRE.add(new ConvertT2SPass(modelDir + "t2s.dat"));
         }
-
-        // postprocess passes
-        POST.add(new DictionaryPass(modelDir + "ns.dat", "ns", false));
-        POST.add(new DictionaryPass(modelDir + "idiom.dat", "i", false));
-        POST.add(new DictionaryPass(modelDir + "singlepun.dat", "w", false));
-        POST.add(new TimeWordPass());
-        POST.add(new DoubleWordPass());
-        POST.add(new SpecialPass());
-        POST.add(new NegWordPass(modelDir + "neg.dat"));
         if (userDict != null) {
-            POST.add(new DictionaryPass(userDict, "uw", true, "UTF-8"));
+            userDict.removeAll(USER_DEFINE_DIC_LIST);
+            if (!userDict.isEmpty()) {
+                USER_DEFINE_DIC_LIST.addAll(userDict);
+                POST.add(new DictionaryPass(userDict, "uw", true, "UTF-8"));
+            }
         }
         if (useFilter) {
             POST.add(new FilterPass(modelDir + "xu.dat", modelDir + "time.dat"));
         }
     }
 
+    /**
+     * @param
+     * @return
+     * @Description: TODO(分词)
+     */
     public static void splitWithUserDics(
             char separator,
             boolean segOnly,
@@ -452,10 +470,8 @@ public class Thulac {
      * @return
      * @Description: TODO(分词接口)
      */
-    public static List<TaggedWord> split(String input) throws IOException {
-        if (TAGGING_DECODER == null || PRE == null || POST == null) {
-            throw new RuntimeException("The `Thulac.init()` method must be called first!");
-        }
+    public static List<TaggedWord> splitWithCache(String input, List<String> userDicts, boolean useT2S, boolean useFilter) throws IOException {
+        init(userDicts, useT2S, useFilter);
         StringOutputHandler outputProvider = IOUtils.outputToString();
         IInputProvider inputProvider = IOUtils.inputFromString(input);
         splitWithUserDics('_', false, inputProvider, outputProvider);
@@ -471,6 +487,18 @@ public class Thulac {
             }
         }
         return taggedWordList;
+    }
+
+    /**
+     * @param
+     * @return
+     * @Description: TODO(清空缓存对象)
+     */
+    public static void clearCache() {
+        TAGGING_DECODER = null;
+        PRE = null;
+        POST = null;
+        USER_DEFINE_DIC_LIST.clear();
     }
 }
 
