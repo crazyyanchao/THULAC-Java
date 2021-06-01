@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -368,7 +367,7 @@ public class Thulac {
         }
     }
 
-    private static CBTaggingDecoder TAGGING_DECODER;
+    //    private static CBTaggingDecoder TAGGING_DECODER;
     private static List<IPreprocessPass> PRE;
     private static List<IPostprocessPass> POST;
     private final static List<String> USER_DEFINE_DIC_LIST = new ArrayList<>();
@@ -380,20 +379,21 @@ public class Thulac {
      */
     private static void init(List<String> userDict, boolean useT2S, boolean useFilter) throws IOException {
         String modelDir = "models/";
-        if (TAGGING_DECODER == null || PRE == null || POST == null) {
-            boolean segOnly = false;
+//        if (TAGGING_DECODER == null || PRE == null || POST == null) {
+        if (PRE == null || POST == null) {
+//            boolean segOnly = false;
             // init
-            TAGGING_DECODER = new CBTaggingDecoder();
+//            TAGGING_DECODER = new CBTaggingDecoder();
             PRE = new ArrayList<>();
             POST = new ArrayList<>();
 
             // segmentation
-            TAGGING_DECODER.threshold = 10000;
-            String prefix = modelDir + "model_c_";
-            TAGGING_DECODER.loadFiles(prefix + "model.bin",
-                    prefix + "dat.bin",
-                    prefix + "label.txt");
-            TAGGING_DECODER.setLabelTrans();
+//            TAGGING_DECODER.threshold = 10000;
+            String prefix = "models/model_c_";
+//            TAGGING_DECODER.loadFiles(prefix + "model.bin",
+//                    prefix + "dat.bin",
+//                    prefix + "label.txt");
+//            TAGGING_DECODER.setLabelTrans();
 
             // preprocess passes
             PRE.add(new PreprocessPass());
@@ -448,6 +448,17 @@ public class Thulac {
         try {
             input.onProgramStart();
             output.onProgramStart();
+
+            // init
+            CBTaggingDecoder TAGGING_DECODER = new CBTaggingDecoder();
+
+            // segmentation
+            TAGGING_DECODER.threshold = 10000;
+            String prefix = "models" + File.separator + "model_c_";
+            TAGGING_DECODER.loadFiles(prefix + "model.bin",
+                    prefix + "dat.bin",
+                    prefix + "label.txt");
+            TAGGING_DECODER.setLabelTrans();
 
             // main loop
             List<TaggedWord> words = new Vector<>();
@@ -505,7 +516,7 @@ public class Thulac {
      * @Description: TODO(清空缓存对象)
      */
     public static void clearCache() {
-        TAGGING_DECODER = null;
+//        TAGGING_DECODER = null;
         PRE = null;
         POST = null;
         USER_DEFINE_DIC_LIST.clear();

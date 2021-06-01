@@ -37,6 +37,7 @@ public class ThulacTest {
 
     @Test
     public void split_1() throws IOException {
+        TEXT = "與建議,時間過得好快呀";
         String result = Thulac.split(TEXT, true);
         System.out.println(result);
     }
@@ -226,7 +227,7 @@ public class ThulacTest {
         /*
          * 初始化加载模型文件和用户自定义词典
          * */
-        TEXT = "葛洲坝2017年半年报点评：业绩符合预期，多元业务齐头并进";
+        TEXT = "與建議,時間過得好快呀";
 
         // 加载大词典测试
         String[] userDicts = new String[]{"dic/user_defined.dic"};
@@ -234,13 +235,13 @@ public class ThulacTest {
         // 是否将繁体中文转换为简体中文
         boolean useT2S = true;
         // 是否在处理时使用过滤器
-        boolean useFilter = false;
+        boolean useFilter = true;
 
         /*
          * 使用缓存加载模型文件和用户自定义词典
          * 开始分词
          * */
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             if (i == 3) {
                 useT2S = false;
                 useFilter = true;
