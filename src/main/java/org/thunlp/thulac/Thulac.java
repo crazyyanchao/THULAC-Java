@@ -379,25 +379,12 @@ public class Thulac {
      */
     private static void init(List<String> userDict, boolean useT2S, boolean useFilter) throws IOException {
         String modelDir = "models/";
-//        if (TAGGING_DECODER == null || PRE == null || POST == null) {
         if (PRE == null || POST == null) {
-//            boolean segOnly = false;
-            // init
-//            TAGGING_DECODER = new CBTaggingDecoder();
             PRE = new ArrayList<>();
             POST = new ArrayList<>();
 
             // segmentation
-//            TAGGING_DECODER.threshold = 10000;
-            String prefix = "models/model_c_";
-//            TAGGING_DECODER.loadFiles(prefix + "model.bin",
-//                    prefix + "dat.bin",
-//                    prefix + "label.txt");
-//            TAGGING_DECODER.setLabelTrans();
-
-            // preprocess passes
             PRE.add(new PreprocessPass());
-
             // postprocess passes
             POST.add(new DictionaryPass(modelDir + "ns.dat", "ns", false));
             POST.add(new DictionaryPass(modelDir + "idiom.dat", "i", false));
@@ -491,8 +478,8 @@ public class Thulac {
      * @return
      * @Description: TODO(分词接口)
      */
-    public static List<TaggedWord> splitWithCache(String input, List<String> userDicts, boolean useT2S, boolean useFilter) throws IOException {
-        init(userDicts, useT2S, useFilter);
+    public static List<TaggedWord> splitWithCache(String input, List<String> userDicts, boolean useFilter) throws IOException {
+        init(userDicts, false, useFilter);
         StringOutputHandler outputProvider = IOUtils.outputToString();
         IInputProvider inputProvider = IOUtils.inputFromString(input);
         splitWithUserDics('_', false, inputProvider, outputProvider);
@@ -516,7 +503,6 @@ public class Thulac {
      * @Description: TODO(清空缓存对象)
      */
     public static void clearCache() {
-//        TAGGING_DECODER = null;
         PRE = null;
         POST = null;
         USER_DEFINE_DIC_LIST.clear();

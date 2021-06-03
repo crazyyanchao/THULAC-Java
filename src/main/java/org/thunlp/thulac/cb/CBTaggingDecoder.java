@@ -205,7 +205,9 @@ public class CBTaggingDecoder {
 	public boolean segment(String raw, POCGraph graph, List<TaggedWord> ts) {
 		if (raw.length() == 0) return false;
 
-		for (int i = 0; i < raw.length(); i++)
+		int num = raw.codePointCount(0,raw.length());
+		for (int i = 0; i < num; i++)
+//		for (int i = 0; i < raw.length(); i++)
 			this.allowedLabelLists[i] = this.pocsToTags[
 					graph.get(i) == 0 ? 15 : graph.get(i)];
 		this.sequence = "";

@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  *
@@ -246,10 +251,163 @@ public class ThulacTest {
                 useT2S = false;
                 useFilter = true;
             }
-            List<TaggedWord> result = Thulac.splitWithCache(TEXT, new ArrayList<>(Arrays.asList(userDicts)), useT2S, useFilter);
+            List<TaggedWord> result = Thulac.splitWithCache(TEXT, new ArrayList<>(Arrays.asList(userDicts)), useFilter);
             result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
         }
         Thulac.clearCache();
+    }
+
+    @Test
+    public void splitWithCache_02() throws Exception {
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+        TEXT = "與建議,時間過得好快呀";
+
+        // 加载大词典测试
+        String[] userDicts = new String[]{"dic/user_defined.dic"};
+
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否在处理时使用过滤器
+        boolean useFilter = true;
+
+        /*
+         * 使用缓存加载模型文件和用户自定义词典
+         * 开始分词
+         * */
+        // 请求总数
+        int clientTotal = 100;
+
+        // 同时并发执行的线程数
+        int threadTotal = 20;
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        final Semaphore semaphore = new Semaphore(threadTotal);
+        final CountDownLatch countDownLatch = new CountDownLatch(clientTotal);
+
+        for (int i = 0; i < clientTotal; i++) {
+            executorService.execute(() -> {
+                try {
+                    semaphore.acquire();
+
+                    List<TaggedWord> result = Thulac.splitWithCache(TEXT, new ArrayList<>(Arrays.asList(userDicts)), useFilter);
+                    result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
+
+                    semaphore.release();
+                } catch (Exception e) {
+                    System.out.println("log.error exception:" + e);
+                }
+                countDownLatch.countDown();
+            });
+        }
+        countDownLatch.await();
+        executorService.shutdown();
+        System.out.println("count:" + count);
+    }
+
+    @Test
+    public void splitWithCache_03() throws IOException {
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+        TEXT = "\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5撒打算撒打算王琦珼";
+//        TEXT = "撒打算撒打算王琦珼，我説啊哪個不是的吧哈韓";
+
+        // 加载大词典测试
+        String[] userDicts = new String[]{"dic/user_defined.dic"};
+
+        // 是否将繁体中文转换为简体中文
+        boolean useT2S = true;
+        // 是否在处理时使用过滤器
+        boolean useFilter = true;
+        List<TaggedWord> result = Thulac.splitWithCache(TEXT, new ArrayList<>(Arrays.asList(userDicts)), useFilter);
+        result.forEach(v -> System.out.println(v.getWord() + "    " + v.getTag() + "  " + v.getDescription()));
+    }
+
+//    public static int count = 0; // 线程不安全
+
+    // 原子锁-线程安全
+    public static AtomicInteger count = new AtomicInteger(0);
+
+    @Test
+    public void splitWithCacheConcurrencyTest() throws Exception {
+        // 请求总数
+        int clientTotal = 5000;
+
+        // 同时并发执行的线程数
+        int threadTotal = 200;
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        final Semaphore semaphore = new Semaphore(threadTotal);
+        final CountDownLatch countDownLatch = new CountDownLatch(clientTotal);
+
+        for (int i = 0; i < clientTotal; i++) {
+            executorService.execute(() -> {
+                try {
+                    semaphore.acquire();
+                    add();
+                    semaphore.release();
+                } catch (Exception e) {
+                    System.out.println("log.error exception:" + e);
+                }
+                countDownLatch.countDown();
+            });
+        }
+        countDownLatch.await();
+        executorService.shutdown();
+        System.out.println("count:" + count);
+    }
+
+    private static void add() {
+//        count++;
+        count.incrementAndGet();
+    }
+
+    @Test
+    public void splitWithCache_04() throws IOException {
+        /*
+         * 初始化加载模型文件和用户自定义词典
+         * */
+        TEXT = "\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5\uD86D\uDFA5撒打算撒打算王琦珼";
+//        TEXT = "撒打算撒打算王琦珼，我説啊哪個不是的吧哈韓";
+        System.out.println(TEXT);
+        String reTEXT = new String(TEXT.getBytes("UTF-8") ,"UTF-8");
+        char[] chars = reTEXT.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < chars.length; i++) {
+            String strCh;
+//            if (i < chars.length && chars[i]=='\uD86D') {
+            strCh = String.valueOf(chars[i] + chars[i + 1]);
+//            } else {
+//                strCh = String.valueOf(chars[i]);
+//            }
+            builder.append(strCh);
+        }
+    }
+
+    @Test
+    public void splitWithCache_05() {
+        System.out.println(decodeUnicode("\uD86D\uDFA5"));
+    }
+
+    public String decodeUnicode(String dataStr) {
+        int start = 0;
+        int end;
+        final StringBuffer buffer = new StringBuffer();
+        while (start > -1) {
+            end = dataStr.indexOf("\\u", start + 2);
+            String charStr = "";
+            if (end == -1) {
+                charStr = dataStr.substring(start + 2, dataStr.length());
+            } else {
+                charStr = dataStr.substring(start + 2, end);
+            }
+            char letter = (char) Integer.parseInt(charStr, 16); // 16进制parse整形字符串。
+            buffer.append(new Character(letter).toString());
+            start = end;
+        }
+        return buffer.toString();
     }
 }
 
