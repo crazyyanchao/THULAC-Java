@@ -61,7 +61,14 @@ public class Thulac {
             if (strArray.length > 1) {
                 String wd = strArray[0];
                 String tag = strArray[1];
-                taggedWordList.add(new TaggedWord(wd, tag));
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd, tag));
+                }
+            } else {
+                String wd = strArray[0];
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd));
+                }
             }
         }
         return taggedWordList;
@@ -87,7 +94,14 @@ public class Thulac {
             if (strArray.length > 1) {
                 String wd = strArray[0];
                 String tag = strArray[1];
-                taggedWordList.add(new TaggedWord(wd, tag));
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd, tag));
+                }
+            } else {
+                String wd = strArray[0];
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd));
+                }
             }
         }
         return taggedWordList;
@@ -491,7 +505,14 @@ public class Thulac {
             if (strArray.length > 1) {
                 String wd = strArray[0];
                 String tag = strArray[1];
-                taggedWordList.add(new TaggedWord(wd, tag));
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd, tag));
+                }
+            } else {
+                String wd = strArray[0];
+                if (!System.getProperty("line.separator").equals(wd) && !"\n".equals(wd)) {
+                    taggedWordList.add(new TaggedWord(wd));
+                }
             }
         }
         return taggedWordList;

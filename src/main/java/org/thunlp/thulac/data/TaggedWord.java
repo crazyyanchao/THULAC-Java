@@ -19,7 +19,11 @@ public class TaggedWord {
     public TaggedWord(String word, String tag) {
         this.word = word != null ? word.replace("\n", "") : null;
         this.tag = tag;
-        this.description = WordNature.MAP.get(tag) != null ? WordNature.MAP.get(tag) : "其它";
+        this.description = WordNature.MAP.getOrDefault(tag,null);
+    }
+
+    public TaggedWord(String word) {
+        this.word = word != null ? word.replace("\n", "") : null;
     }
 
     public String getWord() {
